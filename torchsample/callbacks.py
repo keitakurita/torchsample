@@ -203,9 +203,7 @@ class History(Callback):
     def on_epoch_end(self, epoch, logs=None):
         #for k in self.batch_metrics:
         #    k_log = k.split('_metric')[0]
-        # self.epoch_metrics.update(self.batch_metrics)
-        # TODO
-        pass
+        self.epoch_metrics.update(self.batch_metrics)
 
     def on_batch_end(self, batch, logs=None):
         for k in self.batch_metrics:
@@ -587,6 +585,11 @@ class CSVLogger(Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
+        log_data = {}
+        for k in logs:
+            k_log = k.split('_metric')[0]
+            log_data[k_log] = logs[k]
+        logs = log_data
         RK = {'num_batches', 'num_epoch'}
 
         def handle_value(k):
