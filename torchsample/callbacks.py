@@ -74,8 +74,8 @@ class CallbackContainer(object):
 
     def on_train_end(self, logs=None):
         logs = logs or {}
-        logs['final_loss'] = self.trainer.history.epoch_losses[-1],
-        logs['best_loss'] = min(self.trainer.history.epoch_losses),
+        # logs['final_loss'] = self.trainer.history.epoch_losses[-1],
+        # logs['best_loss'] = min(self.trainer.history.epoch_losses),
         logs['stop_time'] = _get_current_time()
         for callback in self.callbacks:
             callback.on_train_end(logs)
@@ -120,7 +120,7 @@ class TQDM(Callback):
         """
         TQDM Progress Bar callback
 
-        This callback is automatically applied to 
+        This callback is automatically applied to
         every SuperModule if verbose > 0
         """
         self.progbar = None
@@ -141,7 +141,7 @@ class TQDM(Callback):
         try:
             self.progbar = tqdm(total=self.train_logs['num_batches'],
                                 unit=' batches')
-            self.progbar.set_description('Epoch %i/%i' % 
+            self.progbar.set_description('Epoch %i/%i' %
                             (epoch+1, self.train_logs['num_epoch']))
         except:
             pass
@@ -239,10 +239,10 @@ class ModelCheckpoint(Callback):
     """
 
     def __init__(self,
-                 directory, 
-                 filename='ckpt.pth.tar', 
-                 monitor='val_loss', 
-                 save_best_only=False, 
+                 directory,
+                 filename='ckpt.pth.tar',
+                 monitor='val_loss',
+                 save_best_only=False,
                  save_weights_only=True,
                  max_save=-1,
                  verbose=0):
@@ -259,7 +259,7 @@ class ModelCheckpoint(Callback):
             whether to monitor train or val loss
         save_best_only : boolean
             whether to only save if monitored value has improved
-        save_weight_only : boolean 
+        save_weight_only : boolean
             whether to save entire model or just weights
             NOTE: only `True` is supported at the moment
         max_save : integer > 0 or -1
@@ -288,7 +288,7 @@ class ModelCheckpoint(Callback):
         super(ModelCheckpoint, self).__init__()
 
     def save_checkpoint(self, epoch, file, is_best=False):
-        th.save({ 
+        th.save({
             'epoch': epoch + 1,
              #'arch': args.arch,
             'state_dict': self.trainer.model.state_dict(),
@@ -306,7 +306,7 @@ class ModelCheckpoint(Callback):
 
     def on_epoch_end(self, epoch, logs=None):
 
-        file = self.file.format(epoch='%03i'%(epoch+1), 
+        file = self.file.format(epoch='%03i'%(epoch+1),
                                 loss='%0.4f'%logs[self.monitor])
         if self.save_best_only:
             current_loss = logs.get(self.monitor)
@@ -315,7 +315,7 @@ class ModelCheckpoint(Callback):
             else:
                 if current_loss < self.best_loss:
                     if self.verbose > 0:
-                        print('\nEpoch %i: improved from %0.4f to %0.4f saving model to %s' % 
+                        print('\nEpoch %i: improved from %0.4f to %0.4f saving model to %s' %
                               (epoch+1, self.best_loss, current_loss, file))
                     self.best_loss = current_loss
                     #if self.save_weights_only:
@@ -348,7 +348,7 @@ class EarlyStopping(Callback):
     Early Stopping to terminate training early under certain conditions
     """
 
-    def __init__(self, 
+    def __init__(self,
                  monitor='val_loss',
                  min_delta=0,
                  patience=5):
@@ -396,13 +396,13 @@ class EarlyStopping(Callback):
 
     def on_train_end(self, logs):
         if self.stopped_epoch > 0:
-            print('\nTerminated Training for Early Stopping at Epoch %04i' % 
+            print('\nTerminated Training for Early Stopping at Epoch %04i' %
                 (self.stopped_epoch))
 
 
 class LRScheduler(Callback):
     """
-    Schedule the learning rate according to some function of the 
+    Schedule the learning rate according to some function of the
     current epoch index, current learning rate, and current train/val loss.
     """
 
@@ -459,11 +459,11 @@ class ReduceLROnPlateau(Callback):
     """
 
     def __init__(self,
-                 monitor='val_loss', 
-                 factor=0.1, 
+                 monitor='val_loss',
+                 factor=0.1,
                  patience=10,
-                 epsilon=0, 
-                 cooldown=0, 
+                 epsilon=0,
+                 cooldown=0,
                  min_lr=0,
                  verbose=0):
         """
@@ -479,7 +479,7 @@ class ReduceLROnPlateau(Callback):
             number of epochs to wait for loss improvement before reducing lr
         epsilon : float
             how much improvement must be made to reset patience
-        cooldown : integer 
+        cooldown : integer
             number of epochs to cooldown after a lr reduction
         min_lr : float
             minimum value to ever let the learning rate decrease to
@@ -521,7 +521,7 @@ class ReduceLROnPlateau(Callback):
             pass
         else:
             # if in cooldown phase
-            if self.cooldown_counter > 0: 
+            if self.cooldown_counter > 0:
                 self.cooldown_counter -= 1
                 self.wait = 0
             # if loss improved, grab new loss and reset wait counter
@@ -537,7 +537,7 @@ class ReduceLROnPlateau(Callback):
                             new_lr = old_lr * self.factor
                             new_lr = max(new_lr, self.min_lr)
                             if self.verbose > 0:
-                                print('\nEpoch %05d: reducing lr from %0.3f to %0.3f' % 
+                                print('\nEpoch %05d: reducing lr from %0.3f to %0.3f' %
                                     (epoch, old_lr, new_lr))
                             p['lr'] = new_lr
                             self.cooldown_counter = self.cooldown
@@ -550,9 +550,9 @@ class CSVLogger(Callback):
     Logs epoch-level metrics to a CSV file
     """
 
-    def __init__(self, 
-                 file, 
-                 separator=',', 
+    def __init__(self,
+                 file,
+                 separator=',',
                  append=False):
         """
         Logs epoch-level metrics to a CSV file
@@ -606,7 +606,7 @@ class CSVLogger(Callback):
                 delimiter = self.sep
 
             self.writer = csv.DictWriter(self.csv_file,
-                    fieldnames=['epoch'] + [k for k in self.keys if k not in RK], 
+                    fieldnames=['epoch'] + [k for k in self.keys if k not in RK],
                     dialect=CustomDialect)
             if self.append_header:
                 self.writer.writeheader()
@@ -626,8 +626,8 @@ class ExperimentLogger(Callback):
     def __init__(self,
                  directory,
                  filename='Experiment_Logger.csv',
-                 save_prefix='Model_', 
-                 separator=',', 
+                 save_prefix='Model_',
+                 separator=',',
                  append=True):
 
         self.directory = directory
@@ -657,7 +657,7 @@ class ExperimentLogger(Callback):
                     # if header exists, DONT append header again
                 with open(self.file) as f:
                     self.append_header = not bool(len(f.readline()))
-                
+
         model_idx = num_lines
         REJECT_KEYS={'has_validation_data'}
         MODEL_NAME = self.save_prefix + str(model_idx) # figure out how to get model name
@@ -672,7 +672,7 @@ class ExperimentLogger(Callback):
 
         with open(self.file, open_type) as csv_file:
             writer = csv.DictWriter(csv_file,
-                fieldnames=['model'] + [k for k in self.keys if k not in REJECT_KEYS], 
+                fieldnames=['model'] + [k for k in self.keys if k not in REJECT_KEYS],
                 dialect=CustomDialect)
             if self.append_header:
                 writer.writeheader()
@@ -690,10 +690,10 @@ class ExperimentLogger(Callback):
         temp_file = NamedTemporaryFile(delete=False, mode='w')
         with open(self.file, 'r') as csv_file, temp_file:
             reader = csv.DictReader(csv_file,
-                fieldnames=['model'] + [k for k in self.keys if k not in REJECT_KEYS], 
+                fieldnames=['model'] + [k for k in self.keys if k not in REJECT_KEYS],
                 dialect=CustomDialect)
             writer = csv.DictWriter(temp_file,
-                fieldnames=['model'] + [k for k in self.keys if k not in REJECT_KEYS], 
+                fieldnames=['model'] + [k for k in self.keys if k not in REJECT_KEYS],
                 dialect=CustomDialect)
             for row_idx, row in enumerate(reader):
                 if row_idx == 0:
@@ -703,7 +703,7 @@ class ExperimentLogger(Callback):
                     writer.writerow(row_dict)
                 else:
                     writer.writerow(row)
-        shutil.move(temp_file.name, self.file)   
+        shutil.move(temp_file.name, self.file)
 
 
 class LambdaCallback(Callback):
